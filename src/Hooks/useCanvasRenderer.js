@@ -9,32 +9,32 @@ export function useCanvasRenderer(canvasRef, images, currentFrameIndex) {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    
+
     const render = () => {
       if (lastRenderedFrame.current === currentFrameIndex) {
         return;
       }
-      
+
       const img = images[currentFrameIndex];
       if (!img) return;
 
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      
+
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      
+
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, rect.width, rect.height);
-      
+
       const canvasRatio = rect.width / rect.height;
       const imgRatio = img.width / img.height;
-      
+
       let drawWidth = rect.width;
       let drawHeight = rect.height;
       let offsetX = 0;
       let offsetY = 0;
-      
+
       if (canvasRatio > imgRatio) {
         drawHeight = rect.width / imgRatio;
         offsetY = (rect.height - drawHeight) / 2;
@@ -42,7 +42,7 @@ export function useCanvasRenderer(canvasRef, images, currentFrameIndex) {
         drawWidth = rect.height * imgRatio;
         offsetX = (rect.width - drawWidth) / 2;
       }
-      
+
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
       lastRenderedFrame.current = currentFrameIndex;
     };
@@ -65,22 +65,27 @@ export function useCanvasRenderer(canvasRef, images, currentFrameIndex) {
       lastRenderedFrame.current = -1;
       const img = images[currentFrameIndex];
       if (!img) return;
-      
+
       const ctx = canvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      
+
+      // Only resize if dimensions actually changed
+      if (canvas.width === Math.floor(rect.width * dpr) && canvas.height === Math.floor(rect.height * dpr)) {
+        return;
+      }
+
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.scale(dpr, dpr);
-      
+
       const canvasRatio = rect.width / rect.height;
       const imgRatio = img.width / img.height;
       let drawWidth = rect.width;
       let drawHeight = rect.height;
       let offsetX = 0;
       let offsetY = 0;
-      
+
       if (canvasRatio > imgRatio) {
         drawHeight = rect.width / imgRatio;
         offsetY = (rect.height - drawHeight) / 2;
@@ -88,11 +93,17 @@ export function useCanvasRenderer(canvasRef, images, currentFrameIndex) {
         drawWidth = rect.height * imgRatio;
         offsetX = (rect.width - drawWidth) / 2;
       }
-      
+
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const observer = new ResizeObserver(() => {
+      // Use requestAnimationFrame to avoid "ResizeObserver loop limit exceeded" errors
+      requestAnimationFrame(handleResize);
+    });
+
+    observer.observe(canvas);
+
+    return () => observer.disconnect();
   }, [canvasRef, images, currentFrameIndex]);
 }

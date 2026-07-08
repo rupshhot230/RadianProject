@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(calc(-50% - 0.75rem)); /* Half of gap-6 (1.5rem) */ }
+}
+
+@media (min-width: 768px) {
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(calc(-50% - 1.5rem)); /* Half of gap-12 (3rem) */ }
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

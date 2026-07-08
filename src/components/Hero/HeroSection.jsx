@@ -13,21 +13,21 @@ function HeroSection() {
   const sectionRef = useRef(null);
   const canvasRef = useRef(null);
   const [videoEnded, setVideoEnded] = useState(false);
-  
+
   const { images, loaded, progress } = useImagePreloader(TOTAL_FRAMES);
   const { currentFrameIndex, videoOpacity } = useHeroAnimation(sectionRef, TOTAL_FRAMES, loaded);
   useCanvasRenderer(canvasRef, images, currentFrameIndex);
 
   return (
-    <section 
-      ref={sectionRef} 
-      className="relative h-screen w-full overflow-hidden bg-black"
+    <section
+      ref={sectionRef}
+      className="relative h-screen w-full overflow-hidden bg-white"
     >
       {!loaded ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-50 text-white">
           <div className="text-2xl font-bold mb-4">Loading Radian EXR...</div>
           <div className="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-yellow-400 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
@@ -38,7 +38,7 @@ function HeroSection() {
         <>
           {/* Canvas Sequence */}
           <HeroCanvas canvasRef={canvasRef} />
-              
+
           {/* Cover Video that plays until user starts scrolling */}
           <video
             src="https://uncommon.b-cdn.net/hero_final.mp4"
@@ -51,17 +51,17 @@ function HeroSection() {
           />
 
           {/* Dark Overlay */}
-          <div 
-            className="absolute inset-0 bg-black/20 z-10 transition-opacity" 
-            style={{ opacity: videoOpacity }} 
+          <div
+            className="absolute inset-0 bg-black/20 z-10 transition-opacity"
+            style={{ opacity: videoOpacity }}
           />
 
           {/* UI Elements that fade out on scroll */}
-          <div 
+          <div
             className="absolute inset-0 z-20 pointer-events-none"
-            style={{ 
-              opacity: videoOpacity, 
-              visibility: videoOpacity === 0 ? 'hidden' : 'visible' 
+            style={{
+              opacity: videoOpacity,
+              visibility: videoOpacity === 0 ? 'hidden' : 'visible'
             }}
           >
             {/* Content */}
