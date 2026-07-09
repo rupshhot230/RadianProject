@@ -56,17 +56,16 @@ function RadianEXR() {
   useEffect(() => {
     if (!sectionRef.current) return;
 
-    // 1. The main pinning logic for RadianEXR features
+    // 1. ScrollTrigger to track progress through the section (no pin)
     const trigger = ScrollTrigger.create({
       trigger: sectionRef.current,
       start: "top top",
-      end: `+=${features.length * 100}%`,
-      pin: true,
+      end: "bottom bottom", // Track until the bottom of the section reaches the bottom of the viewport
       scrub: 0.1,
       onUpdate: (self) => {
         const progress = self.progress;
 
-        // Calculate active index
+        // Calculate active index based on scroll progress
         const newIndex = Math.min(
           features.length - 1,
           Math.floor(progress * features.length)
@@ -83,7 +82,6 @@ function RadianEXR() {
       const target = document.getElementById('usp-media-target');
       if (!canvas || !target || !sectionRef.current) return;
 
-      // Store the original parent (which is inside HeroSection)
       if (!originalParent && canvas.parentNode !== target && canvas.parentNode !== document.body) {
         originalParent = canvas.parentNode;
       }
@@ -91,7 +89,7 @@ function RadianEXR() {
       const rect = sectionRef.current.getBoundingClientRect();
       const winH = window.innerHeight;
 
-      // If we are above the transition zone (Hero section is fully visible)
+      // If we are above the transition zone
       if (rect.top >= winH) {
         if (originalParent && canvas.parentNode !== originalParent) {
           originalParent.appendChild(canvas);
@@ -106,12 +104,12 @@ function RadianEXR() {
         return;
       }
 
-      // Transition progress (0 when rect.top == winH, 1 when rect.top <= 0)
+      // Transition progress
       let p = 1 - (rect.top / winH);
       if (p > 1) p = 1;
       if (p < 0) p = 0;
 
-      // If transition is fully complete, physically place it inside the target!
+      // Fully complete transition
       if (p === 1) {
         if (canvas.parentNode !== target) {
           target.appendChild(canvas);
@@ -121,13 +119,12 @@ function RadianEXR() {
         canvas.style.height = '100%';
         canvas.style.top = '0px';
         canvas.style.left = '0px';
-        canvas.style.borderRadius = '0px'; // target container has overflow-hidden & rounded-3xl
+        canvas.style.borderRadius = '0px';
         canvas.style.zIndex = '10';
         return;
       }
 
-      // Interpolation Phase (0 < p < 1)
-      // Move to body to avoid clipping and stacking context issues during fixed transition
+      // Interpolation Phase
       if (canvas.parentNode !== document.body) {
         document.body.appendChild(canvas);
       }
@@ -136,7 +133,6 @@ function RadianEXR() {
       const startWidth = window.innerWidth;
       const startHeight = window.innerHeight;
 
-      // The start position moves up as the user scrolls, simulating natural scroll
       const startTop = -(p * winH);
       const startLeft = 0;
 
@@ -144,7 +140,7 @@ function RadianEXR() {
       const currentHeight = startHeight + (targetBounds.height - startHeight) * p;
       const currentTop = startTop + (targetBounds.top - startTop) * p;
       const currentLeft = startLeft + (targetBounds.left - startLeft) * p;
-      const currentRadius = 0 + (24 - 0) * p; // 3xl is 24px
+      const currentRadius = 0 + (24 - 0) * p;
 
       canvas.style.position = 'fixed';
       canvas.style.zIndex = '40';
@@ -163,7 +159,7 @@ function RadianEXR() {
     };
   }, []);
 
-  // Hide the flying canvas when scrolling past the first feature so other images are visible
+  // Hide the flying canvas when scrolling past the first feature
   useEffect(() => {
     const canvas = document.getElementById('hero-canvas');
     if (canvas) {
@@ -181,27 +177,29 @@ function RadianEXR() {
   }, [activeIndex]);
 
   return (
-    <section ref={sectionRef} id="exr-section" className="h-screen w-full bg-white text-black overflow-hidden relative">
-      <div className="max-w-[1920px] mx-auto h-full flex flex-col md:flex-row items-center justify-between px-6 md:px-16 lg:px-32 py-12 md:py-24">
+    <section ref={sectionRef} id="exr-section" className="w-full bg-white text-black relative">
+      <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row justify-between px-6 md:px-16 lg:px-32">
 
-        {/* Left Column: Titles */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center h-full z-10">
-          <h1 className="text-6xl font-semibold tracking-widest uppercase mb-8 md:mb-32 text-gray-500">Radian EXR</h1>
-          <ul className="flex flex-col gap-4 md:gap-8">
+        {/* Left Column: Titles (Scrolling Naturally) */}
+        <div className="w-full md:w-1/2 z-10 pt-[10vh] pb-[10vh]">
+          <h1 className="text-5xl font-semibold tracking-widest uppercase mb-16 text-gray-500  z-20">Radian EXR</h1>
+
+          <ul className="flex flex-col">
             {features.map((feature, index) => (
               <li
                 key={feature.id}
-                className={`transition-all duration-500 cursor-pointer ${index === activeIndex ? 'opacity-100 translate-x-2' : 'opacity-20 translate-x-0'
+                className={`transition-all duration-500 flex flex-col justify-center min-h-[10vh] py-8 ${index === activeIndex ? 'opacity-100 translate-x-2' : 'opacity-20 translate-x-0'
                   }`}
               >
-                <h2 className="text-3xl md:text-3xl lg:text-4xl font-bold tracking-tighter leading-none">
+                <h2 className="text-3xl md:text-3xl lg:text-5xl font-semibold tracking-tighter leading-none py-2 mb-4">
                   {feature.title}
                 </h2>
+
               </li>
             ))}
           </ul>
 
-          <div className="mt-12 md:mt-32">
+          <div className="mt-16 pb-16">
             <button className="flex items-center gap-3 bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 transition group">
               Explore the EXR
               <div className="w-8 h-8 flex items-center justify-center bg-white/20 rounded-full group-hover:translate-x-1 transition-transform">
@@ -213,9 +211,9 @@ function RadianEXR() {
           </div>
         </div>
 
-        {/* Right Column: Media */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center relative mt-8 md:mt-0 z-0">
-          <div id="usp-media-target" className="relative w-full aspect-[4/3] md:aspect-[4/5] rounded-3xl overflow-hidden bg-transparent">
+        {/* Right Column: Media (Sticky) */}
+        <div className="w-full md:w-1/2 h-[40vh] md:h-screen sticky top-0 flex flex-col justify-center relative z-0 md:pl-12">
+          <div id="usp-media-target" className="relative w-full aspect-[4/3] md:aspect-[4/4] rounded-xl overflow-hidden bg-transparent">
 
             {/* The actual feature images */}
             {features.map((feature, index) => (
@@ -236,8 +234,8 @@ function RadianEXR() {
             ))}
 
             {/* Always show the caption for the active feature */}
-            <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 bg-gradient-to-t from-black/80 to-transparent text-white z-50">
-              <p className="text-lg md:text-2xl font-light">{features[activeIndex].caption}</p>
+            <div className="absolute bottom-0 left-0 w-full p-2 md:p-4 bg-black/20  text-white z-50 transition-opacity duration-300">
+              <p className="text-sm md:text-xl font-light">{features[activeIndex].caption}</p>
             </div>
 
           </div>
